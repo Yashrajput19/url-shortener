@@ -4,6 +4,8 @@ import { urlrouter } from "./routes/url.route.js";
 import { connectToMongoDB } from "./db/connect.db.js";
 import { DB_NAME } from "./constants.js";
 import URL from "./models/url.model.js";
+import path from 'path';
+import staticRouter from "./routes/staticRouter.js";
 
 dotenv.config({
     path: './env'
@@ -20,10 +22,16 @@ connectToMongoDB(`${process.env.MONGODB_URL}/${DB_NAME}`)
     console.log(err);
 });
 
-app.use(express.json())
-app.use('/url',urlrouter);
+app.set("view engine","ejs");
+app.set("views",path.resolve('./views'))
 
-app.get('/:shortId' , async (req,res) => {
+app.use(express.json())
+app.use(express.urlencoded({ extended:false }));
+
+app.use('/url',urlrouter);
+app.use('/',staticRouter);
+
+app.get('/url/:shortId' , async (req,res) => {
    
     const shortId = req.params.shortId;
     
