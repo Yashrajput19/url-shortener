@@ -8,7 +8,7 @@ import path from 'path';
 import staticRouter from "./routes/staticRouter.js";
 import userRouter from "./routes/user.route.js";
 import cookieParser from "cookie-parser";
-import { restrictToLoggedinUserOnly ,checkAuth } from "./middleware/auth.middleware.js";
+import {checkForAuthentication,restrictTo } from "./middleware/auth.middleware.js";
 
 dotenv.config({
     path: './env'
@@ -31,10 +31,11 @@ app.set("views",path.resolve('./views'))
 app.use(express.json())
 app.use(express.urlencoded({ extended:false }));
 app.use(cookieParser());
+app.use(checkForAuthentication);
 
-app.use('/url',restrictToLoggedinUserOnly, urlrouter);
+app.use('/url', restrictTo(["NORMAL" , "ADMIN"]), urlrouter);
 app.use('/user',userRouter);
-app.use('/', checkAuth ,staticRouter);
+app.use('/',staticRouter);
 
 app.get('/url/:shortId' , async (req,res) => {
    

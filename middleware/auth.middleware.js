@@ -1,27 +1,28 @@
 import { getUser } from "../utils/auth.js";
 
-export async function restrictToLoggedinUserOnly(req,res,next) {
-
-    const userUid = req.cookies?.uid;
-
-    if(!userUid) return res.redirect("/login");
-
-    const user = getUser(userUid);
-
-    if(!user) return res.redirect('/login');
+export function checkForAuthentication(req,res,next) {
+    
+    const tokenCookie = req.cookies?.token;
+    req.user = null;
+    
+    console.log(tokenCookie);
+    if(!tokenCookie) return next();
+    
+    const token = tokenCookie;
+    const user = getUser(token);
+   
     req.user = user;
-
-    next();
+    return next();
 }
 
-export async function checkAuth(req,res,next){
+export function restrictTo(roles = []) {
+    
+    return function(req,res,next)
+    {
+        if(!req.user) return res.redirect("/login");
 
-    const userUid = req.cookies?.uid;
+        if(!roles.includes(req.user.role)) return res.end('UnAuthorized');
 
-    const user = getUser(userUid);
-
-    req.user = user;
-
-    next();
-
+        return next();
+    };
 }
